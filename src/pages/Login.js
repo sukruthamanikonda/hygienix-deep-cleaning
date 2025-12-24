@@ -19,7 +19,7 @@ const Login = () => {
         setLoading(true);
 
         try {
-            const response = await fetch(`${API_BASE}/api/auth/login`, {
+            const response = await fetch(`${API_BASE}/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),
@@ -28,6 +28,9 @@ const Login = () => {
             const data = await response.json();
 
             if (!response.ok) {
+                if (response.status === 401) {
+                    throw new Error('Invalid email or password');
+                }
                 throw new Error(data.error || 'Login failed');
             }
 
@@ -65,8 +68,8 @@ const Login = () => {
                             type="button"
                             onClick={() => setUserType('customer')}
                             className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${userType === 'customer'
-                                    ? 'bg-white text-emerald-600 shadow-sm ring-1 ring-slate-200'
-                                    : 'text-slate-500 hover:text-slate-700'
+                                ? 'bg-white text-emerald-600 shadow-sm ring-1 ring-slate-200'
+                                : 'text-slate-500 hover:text-slate-700'
                                 }`}
                         >
                             <User size={18} />
@@ -76,8 +79,8 @@ const Login = () => {
                             type="button"
                             onClick={() => setUserType('admin')}
                             className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${userType === 'admin'
-                                    ? 'bg-white text-emerald-600 shadow-sm ring-1 ring-slate-200'
-                                    : 'text-slate-500 hover:text-slate-700'
+                                ? 'bg-white text-emerald-600 shadow-sm ring-1 ring-slate-200'
+                                : 'text-slate-500 hover:text-slate-700'
                                 }`}
                         >
                             <ShieldCheck size={18} />
