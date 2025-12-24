@@ -79,24 +79,4 @@ router.post('/reset', async (req, res) => {
     });
 });
 
-// TEMPORARY: Create admin user (Call once then remove/comment)
-router.post('/create-admin', async (req, res) => {
-    const { secret } = req.body;
-    if (secret !== 'hygienix_init_2025') return res.status(401).json({ error: 'Unauthorized' });
-
-    try {
-        const hash = await bcrypt.hash('Admin@123', 10);
-        db.run(
-            'INSERT OR REPLACE INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)',
-            ['Administrator', 'admin@hygienix.in', hash, 'admin'],
-            function (err) {
-                if (err) return res.status(500).json({ error: err.message });
-                res.json({ message: 'Admin user created/updated successfully' });
-            }
-        );
-    } catch (err) {
-        res.status(500).json({ error: 'Server error' });
-    }
-});
-
 module.exports = router;

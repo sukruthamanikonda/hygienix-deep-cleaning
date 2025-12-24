@@ -36,10 +36,16 @@ const Login = () => {
 
             login(data.user, data.token);
 
+            // Debug logging
+            console.log('Login successful:', data.user);
+            console.log('User role:', data.user.role);
+
             // Redirect based on role
             if (data.user.role === 'admin') {
+                console.log('Redirecting to admin dashboard');
                 navigate('/admin/dashboard');
             } else {
+                console.log('Redirecting to my orders');
                 navigate('/my-orders');
             }
         } catch (err) {
