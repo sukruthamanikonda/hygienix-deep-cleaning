@@ -85,7 +85,7 @@ function ContactForm() {
     e.preventDefault();
     setStatus('sending');
     try {
-      const res = await fetch(`${API}/api/contacts`, {
+      const res = await fetch(`${API}/contacts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, phone, message })

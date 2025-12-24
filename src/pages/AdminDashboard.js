@@ -21,7 +21,7 @@ const AdminDashboard = () => {
 
     const fetchOrders = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/orders/admin`, {
+            const res = await fetch(`${API_BASE}/orders/admin`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();

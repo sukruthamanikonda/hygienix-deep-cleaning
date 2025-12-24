@@ -73,7 +73,7 @@ export default function BookNow() {
             const headers = { 'Content-Type': 'application/json' };
             if (token) headers['Authorization'] = `Bearer ${token}`;
 
-            const res = await fetch(`${API_BASE}/api/orders`, {
+            const res = await fetch(`${API_BASE}/orders`, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(payload)
