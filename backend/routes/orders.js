@@ -4,6 +4,7 @@ const db = require('../db');
 const { authenticateToken, isAdmin, tryAuthenticateToken } = require('../middleware/auth');
 const { sendWhatsApp, adminNumber } = require('../services/whatsapp');
 const nodemailer = require('nodemailer');
+const axios = require('axios');
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -31,19 +32,47 @@ router.post('/', tryAuthenticateToken, (req, res) => {
     const { items, total, customer_name, customer_phone, customer_email, address, service_date } = req.body;
     const name = customer_name || 'Guest';
     const itemsStr = JSON.stringify(items || []);
+    const firstItem = items && items.length > 0 ? items[0] : {};
 
     db.run(
         'INSERT INTO orders (user_id, items, total, status, customer_name, customer_phone, address, service_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
         [req.user ? req.user.id : null, itemsStr, total, 'pending', name, customer_phone, address, service_date],
-        function (err) {
+        async function (err) {
             if (err) return res.status(500).json({ error: err.message });
             const orderId = this.lastID;
+
+            const order = {
+                id: orderId,
+                name: name,
+                phone: customer_phone,
+                serviceType: firstItem.propertyType || 'Cleaning',
+                category: firstItem.bhkCategory || 'General',
+                date: service_date,
+                address: address
+            };
 
             db.run('INSERT INTO notifications (type, title, message, meta) VALUES (?, ?, ?, ?)', ['order', 'New Booking', `Order #${orderId} from ${name}`, JSON.stringify({ orderId })]);
 
             const msg = `Booking #${orderId} confirmed for ${name}! Total: ₹${total}.`;
             // if (customer_phone) sendWhatsApp({ to: customer_phone, body: `Hi ${name}, ${msg}` });
             // if (adminNumber) sendWhatsApp({ to: adminNumber, body: `New Order #${orderId} from ${name}.` });
+
+            // Trigger n8n Webhook
+            try {
+                await axios.post('http://localhost:5678/webhook-test/hygienix-new-order', {
+                    name: order.name,
+                    phone: order.phone,
+                    service: order.serviceType,
+                    category: order.category,
+                    date: order.date,
+                    address: order.address,
+                    adminPhone: '+919535901059', // Using admin number from whatsapp.js or user's placeholder
+                    customerPhone: order.phone
+                });
+            } catch (webhookErr) {
+                console.error('Failed to trigger n8n webhook:', webhookErr.message);
+                // We don't break the response if webhook fails
+            }
 
             if (customer_email || process.env.ADMIN_EMAIL) {
                 const adminEmail = process.env.ADMIN_EMAIL || 'admin@hygienix.in';
@@ -63,7 +92,7 @@ router.post('/', tryAuthenticateToken, (req, res) => {
                 }).catch(e => console.error(e));
             }
 
-            res.status(201).json({ id: orderId, message: 'Order created successfully' });
+            res.status(201).json({ success: true, order });
         }
     );
 });
@@ -95,3 +124,4 @@ router.patch('/:id/status', authenticateToken, isAdmin, (req, res) => {
 });
 
 module.exports = router;
+
