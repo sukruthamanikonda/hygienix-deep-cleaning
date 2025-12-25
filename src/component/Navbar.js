@@ -1,14 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { LogOut, User, Menu, X, ChevronRight, Building2 } from 'lucide-react';
 import logo from "../images/logoHygienix.png"
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Read user from localStorage
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, [location]); // Re-check on route change
+
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    setUser(null);
+    navigate('/');
+  };
 
   const navItems = [
     { path: '/', label: 'Home' },
@@ -50,29 +64,28 @@ export default function Navbar() {
               <div className="flex items-center gap-2">
                 {user.role === 'admin' && (
                   <Link
-                    to="/admin/dashboard"
+                    to="/admin-dashboard"
                     className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 
-                      ${isActive('/admin/dashboard')
+                      ${isActive('/admin-dashboard')
                         ? 'text-emerald-600 bg-emerald-50'
                         : 'text-gray-600 hover:text-emerald-600 hover:bg-gray-50'}`}
                   >
                     Admin Panel
                   </Link>
                 )}
-                <Link
-                  to="/my-orders"
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 
-                    ${isActive('/my-orders')
-                      ? 'text-emerald-600 bg-emerald-50'
-                      : 'text-gray-600 hover:text-emerald-600 hover:bg-gray-50'}`}
-                >
-                  My Bookings
-                </Link>
+                {user.role === 'customer' && (
+                  <Link
+                    to="/customer-dashboard"
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 
+                      ${isActive('/customer-dashboard')
+                        ? 'text-emerald-600 bg-emerald-50'
+                        : 'text-gray-600 hover:text-emerald-600 hover:bg-gray-50'}`}
+                  >
+                    My Bookings
+                  </Link>
+                )}
                 <button
-                  onClick={() => {
-                    logout();
-                    navigate('/');
-                  }}
+                  onClick={handleLogout}
                   className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-all duration-200"
                 >
                   <LogOut className="w-4 h-4" />
@@ -88,7 +101,7 @@ export default function Navbar() {
                   Login
                 </Link>
                 <Link
-                  to="/services"
+                  to="/booknow"
                   className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-all shadow-md active:scale-95"
                 >
                   Book Now
@@ -132,7 +145,7 @@ export default function Navbar() {
               <>
                 {user.role === 'admin' && (
                   <Link
-                    to="/admin/dashboard"
+                    to="/admin-dashboard"
                     onClick={() => setIsOpen(false)}
                     className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-base font-medium text-gray-600 hover:bg-gray-50"
                   >
@@ -140,19 +153,20 @@ export default function Navbar() {
                     Admin Panel
                   </Link>
                 )}
-                <Link
-                  to="/my-orders"
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-base font-medium text-gray-600 hover:bg-gray-50"
-                >
-                  <User className="w-5 h-5" />
-                  My Bookings
-                </Link>
+                {user.role === 'customer' && (
+                  <Link
+                    to="/customer-dashboard"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-base font-medium text-gray-600 hover:bg-gray-50"
+                  >
+                    <User className="w-5 h-5" />
+                    My Bookings
+                  </Link>
+                )}
                 <button
                   onClick={() => {
-                    logout();
+                    handleLogout();
                     setIsOpen(false);
-                    navigate('/');
                   }}
                   className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-base font-medium text-red-600 hover:bg-red-50"
                 >
@@ -170,7 +184,7 @@ export default function Navbar() {
                   Login
                 </Link>
                 <Link
-                  to="/services"
+                  to="/booknow"
                   onClick={() => setIsOpen(false)}
                   className="flex items-center justify-center w-full px-4 py-3 rounded-xl text-base font-medium text-white bg-emerald-600 shadow-lg"
                 >

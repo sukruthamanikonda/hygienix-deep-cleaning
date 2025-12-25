@@ -1,4 +1,3 @@
-require('dotenv').config();
 const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcryptjs');
 const path = require('path');
@@ -6,45 +5,29 @@ const path = require('path');
 const DB_PATH = path.join(__dirname, 'hygienix.db');
 const db = new sqlite3.Database(DB_PATH);
 
-const adminEmail = 'admin@hygienix.in';
-const adminPassword = 'Admin@123';
+const ADMIN_PHONE = '9999999999';
+const ADMIN_EMAIL = 'admin@hygienix.in';
+const ADMIN_PASSWORD = 'admin123';
+const ADMIN_NAME = 'Admin';
 
-async function seedAdmin() {
-    console.log('Seeding admin user...');
+console.log('Creating admin user...\n');
 
-    try {
-        const hash = await bcrypt.hash(adminPassword, 10);
-
-        db.get('SELECT id FROM users WHERE email = ?', [adminEmail], (err, row) => {
+bcrypt.hash(ADMIN_PASSWORD, 10).then(hash => {
+    db.run(
+        "INSERT OR REPLACE INTO users (name, email, password_hash, phone, role) VALUES (?, ?, ?, ?, ?)",
+        [ADMIN_NAME, ADMIN_EMAIL, hash, ADMIN_PHONE, 'admin'],
+        function (err) {
             if (err) {
-                console.error('Error checking for existing admin:', err.message);
-                process.exit(1);
-            }
-
-            if (row) {
-                console.log('Admin user already exists. Updating password...');
-                db.run('UPDATE users SET password_hash = ?, role = ? WHERE email = ?', [hash, 'admin', adminEmail], (updateErr) => {
-                    if (updateErr) console.error('Update failed:', updateErr.message);
-                    else console.log('✅ Admin credentials updated successfully.');
-                    db.close();
-                });
+                console.error("Error creating admin:", err);
             } else {
-                console.log('Creating new admin user...');
-                db.run(
-                    'INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)',
-                    ['Administrator', adminEmail, hash, 'admin'],
-                    (insertErr) => {
-                        if (insertErr) console.error('Insert failed:', insertErr.message);
-                        else console.log('✅ Admin user created successfully.');
-                        db.close();
-                    }
-                );
+                console.log("✅ Admin user created successfully!");
+                console.log("   Email:", ADMIN_EMAIL);
+                console.log("   Phone:", ADMIN_PHONE);
+                console.log("   Password:", ADMIN_PASSWORD);
+                console.log("   Role: admin");
+                console.log("\nYou can now login at http://localhost:3000/login");
             }
-        });
-    } catch (err) {
-        console.error('Hashing failed:', err.message);
-        process.exit(1);
-    }
-}
-
-seedAdmin();
+            db.close();
+        }
+    );
+});

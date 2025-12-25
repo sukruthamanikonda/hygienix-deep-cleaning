@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
 import { Package, Clock, CheckCircle, MapPin, Calendar, CreditCard } from 'lucide-react';
 import { API_BASE } from '../api';
 
@@ -7,11 +6,17 @@ const MyOrders = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const { token } = useAuth();
 
     useEffect(() => {
         const fetchOrders = async () => {
             try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    setError('Please login to view your orders');
+                    setLoading(false);
+                    return;
+                }
+
                 const response = await fetch(`${API_BASE}/orders/my`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -25,8 +30,8 @@ const MyOrders = () => {
             }
         };
 
-        if (token) fetchOrders();
-    }, [token]);
+        fetchOrders();
+    }, []);
 
     if (loading) return <div className="text-center py-20">Loading your bookings...</div>;
 

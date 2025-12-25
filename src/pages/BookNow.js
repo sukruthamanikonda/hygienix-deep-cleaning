@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { SERVICES_DATA } from '../constants';
 import { API_BASE } from '../api';
 import { Calendar, MapPin, User, Phone, CheckCircle, Sparkles, Loader2, ChevronRight } from 'lucide-react';
 
 export default function BookNow() {
-    const { user, token } = useAuth();
     const navigate = useNavigate();
+    const [user, setUser] = useState(null);
+    const [token, setToken] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [bookingForm, setBookingForm] = useState({
-        name: user?.name || '',
-        phone: user?.phone || '',
+        name: '',
+        phone: '',
         date: '',
         address: '',
         propertyType: 'home',
@@ -21,14 +21,27 @@ export default function BookNow() {
     });
 
     useEffect(() => {
-        if (user) {
-            setBookingForm(prev => ({
-                ...prev,
-                name: user.name || prev.name,
-                phone: user.phone || prev.phone
-            }));
+        // Check if user is logged in
+        const storedUser = localStorage.getItem('user');
+        const storedToken = localStorage.getItem('token');
+
+        if (!storedUser || !storedToken) {
+            // Redirect to login if not authenticated
+            alert('Please login to book a service');
+            navigate('/login');
+            return;
         }
-    }, [user]);
+
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        setToken(storedToken);
+
+        setBookingForm(prev => ({
+            ...prev,
+            name: parsedUser.name || '',
+            phone: parsedUser.phone || ''
+        }));
+    }, [navigate]);
 
     const getCategoryOptions = (propertyType) => {
         switch (propertyType) {
@@ -83,11 +96,7 @@ export default function BookNow() {
             if (!res.ok) throw new Error(data.error || 'Server rejected booking');
 
             alert(`Booking confirmed! You will receive a WhatsApp confirmation shortly.`);
-            if (token) {
-                navigate('/my-orders');
-            } else {
-                navigate('/');
-            }
+            navigate('/customer-dashboard');
         } catch (err) {
             setError(err.message);
         } finally {

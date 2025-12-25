@@ -58,33 +58,17 @@ db.run(`
   if (err) console.error('Error creating orders table:', err);
 });
 
-const columnsToAdd = [
-  { name: 'user_id', type: 'INTEGER' },
-  { name: 'customer_name', type: 'TEXT' },
-  { name: 'customer_phone', type: 'TEXT' },
-  { name: 'address', type: 'TEXT' },
-  { name: 'service_date', type: 'TEXT' }
-];
-
-columnsToAdd.forEach(col => {
-  db.run(`ALTER TABLE orders ADD COLUMN ${col.name} ${col.type}`, (err) => {
-    // Ignore duplicate column errors
-    if (err && !/duplicate column name|already exists/i.test(err.message || '')) {
-      console.error(`Error adding ${col.name} column:`, err);
-    }
-  });
-});
-
+// Create notifications table
 db.run(`
-    CREATE TABLE IF NOT EXISTS notifications (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      type TEXT,
-      title TEXT,
-      message TEXT,
-      meta TEXT,
-      is_read INTEGER DEFAULT 0,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
+    CREATE TABLE IF NOT EXISTS notifications(
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  type TEXT,
+  title TEXT,
+  message TEXT,
+  meta TEXT,
+  is_read INTEGER DEFAULT 0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+)
   `, (err) => {
   if (err) console.error('Error creating notifications table:', err);
 });
