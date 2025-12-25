@@ -70,7 +70,7 @@ router.post('/', tryAuthenticateToken, (req, res) => {
 
 router.patch('/:id/status', authenticateToken, isAdmin, (req, res) => {
     const { status } = req.body;
-    if (!['completed', 'cancelled'].includes(status)) {
+    if (!['completed', 'cancelled', 'accepted', 'rejected', 'pending'].includes(status)) {
         return res.status(400).json({ error: 'Invalid status' });
     }
 

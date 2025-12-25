@@ -9,6 +9,144 @@ const router = express.Router();
 const SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
+// ============================================
+// CUSTOMER AUTH ENDPOINTS
+// ============================================
+
+// Customer Signup
+router.post('/customer/signup', async (req, res) => {
+    const { name, email, password, confirmPassword, phone } = req.body;
+
+    if (!name || !email || !password) {
+        return res.status(400).json({ error: 'Name, email and password required' });
+    }
+
+    if (password !== confirmPassword) {
+        return res.status(400).json({ error: 'Passwords do not match' });
+    }
+
+    try {
+        const hash = await bcrypt.hash(password, 10);
+        db.run(
+            'INSERT INTO users (name, email, password_hash, phone, role) VALUES (?, ?, ?, ?, ?)',
+            [name, email, hash, phone || null, 'customer'],
+            function (err) {
+                if (err) {
+                    if (err.message.includes('UNIQUE')) {
+                        return res.status(409).json({ error: 'Email already registered' });
+                    }
+                    return res.status(500).json({ error: 'Registration failed' });
+                }
+                const user = { id: this.lastID, name, email, phone, role: 'customer' };
+                const token = jwt.sign(user, SECRET, { expiresIn: '7d' });
+                res.status(201).json({ user, token });
+            }
+        );
+    } catch (err) {
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Customer Login
+router.post('/customer/login', (req, res) => {
+    const { identifier, password } = req.body; // identifier can be email or phone
+
+    if (!identifier || !password) {
+        return res.status(400).json({ error: 'Email/Phone and password required' });
+    }
+
+    db.get('SELECT * FROM users WHERE (email = ? OR phone = ?) AND role = ?',
+        [identifier, identifier, 'customer'],
+        async (err, row) => {
+            if (err) return res.status(500).json({ error: 'Server error' });
+            if (!row) return res.status(401).json({ error: 'Invalid credentials' });
+
+            const ok = await bcrypt.compare(password, row.password_hash);
+            if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
+
+            const user = { id: row.id, name: row.name, email: row.email, role: row.role, phone: row.phone };
+            const token = jwt.sign(user, SECRET, { expiresIn: '7d' });
+            res.json({ user, token });
+        }
+    );
+});
+
+// Customer Forgot Password
+router.post('/customer/forgot-password', (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ error: 'Email required' });
+    }
+
+    db.get('SELECT id, email FROM users WHERE email = ? AND role = ?', [email, 'customer'], (err, row) => {
+        if (err || !row) {
+            return res.json({ message: 'If that email exists, a reset link was sent.' });
+        }
+
+        const token = crypto.randomBytes(32).toString('hex');
+        const expires = Date.now() + 3600000; // 1 hour
+
+        db.run('UPDATE users SET password_reset_token = ?, password_reset_expires = ? WHERE id = ?',
+            [token, expires, row.id],
+            () => {
+                const transporter = nodemailer.createTransport({
+                    service: 'gmail',
+                    auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_PASS }
+                });
+
+                const resetLink = `${FRONTEND_URL}/reset-password?token=${token}`;
+
+                transporter.sendMail({
+                    from: process.env.GMAIL_USER,
+                    to: email,
+                    subject: 'Password Reset - Hygienix Deep Cleaning',
+                    html: `
+                        <h2>Password Reset Request</h2>
+                        <p>Click the link below to reset your password:</p>
+                        <a href="${resetLink}">${resetLink}</a>
+                        <p>This link will expire in 1 hour.</p>
+                    `
+                }, () => {
+                    res.json({ message: 'If that email exists, a reset link was sent.' });
+                });
+            }
+        );
+    });
+});
+
+// ============================================
+// ADMIN AUTH ENDPOINTS
+// ============================================
+
+// Admin Login (NO signup, NO forgot password)
+router.post('/admin/login', (req, res) => {
+    const { identifier, password } = req.body; // identifier can be email or phone
+
+    if (!identifier || !password) {
+        return res.status(400).json({ error: 'Email/Phone and password required' });
+    }
+
+    db.get('SELECT * FROM users WHERE (email = ? OR phone = ?) AND role = ?',
+        [identifier, identifier, 'admin'],
+        async (err, row) => {
+            if (err) return res.status(500).json({ error: 'Server error' });
+            if (!row) return res.status(401).json({ error: 'Invalid admin credentials' });
+
+            const ok = await bcrypt.compare(password, row.password_hash);
+            if (!ok) return res.status(401).json({ error: 'Invalid admin credentials' });
+
+            const user = { id: row.id, name: row.name, email: row.email, role: row.role, phone: row.phone };
+            const token = jwt.sign(user, SECRET, { expiresIn: '7d' });
+            res.json({ user, token });
+        }
+    );
+});
+
+// ============================================
+// LEGACY ENDPOINTS (Keep for backward compatibility)
+// ============================================
+
 router.post(['/signup', '/register'], async (req, res) => {
     const { name, email, password, phone } = req.body;
     if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
