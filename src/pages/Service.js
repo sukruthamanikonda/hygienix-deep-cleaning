@@ -108,7 +108,7 @@ export default function Services() {
       if (!res.ok) throw new Error(data.error || 'Booking failed');
 
       /* ---------------- WHATSAPP REDIRECT ---------------- */
-      const adminNumber = '917975967466';
+      const adminNumber = '919535901059';
       const message = `New Hygienix order 🚀
 Name: ${bookingForm.name}
 Phone: ${bookingForm.phone}

@@ -2,7 +2,7 @@ const axios = require('axios');
 
 const WHATSAPP_PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;
-const adminNumber = process.env.ADMIN_WHATSAPP_NUMBER || '917975967466';
+const adminNumber = process.env.ADMIN_WHATSAPP_NUMBER || '9535901059';
 
 /**
  * Sends a WhatsApp message using Meta WhatsApp Cloud API (Admin Notification)

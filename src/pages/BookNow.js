@@ -100,7 +100,7 @@ export default function BookNow() {
             if (!res.ok) throw new Error(data.error || 'Server rejected booking');
 
             /* ---------------- WHATSAPP REDIRECT ---------------- */
-            const adminNumber = '917975967466';
+            const adminNumber = '919535901059';
             const message = `New Hygienix order 🚀
 Name: ${bookingForm.name}
 Phone: ${bookingForm.phone}
