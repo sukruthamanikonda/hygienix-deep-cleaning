@@ -15,6 +15,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import MyOrders from './pages/MyOrders';
 import AdminDashboard from './pages/AdminDashboard';
+import Success from './pages/Success';
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/booknow" element={<BookNow />} />
+              <Route path="/success" element={<Success />} />
 
               {/* Customer Auth (Login/Signup/Forgot Password) */}
               <Route path="/login" element={<CustomerAuth />} />

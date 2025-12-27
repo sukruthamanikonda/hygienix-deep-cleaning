@@ -1,88 +1,74 @@
-Deployment checklist for Hygienix (frontend + backend)
+# Deployment Guide: Vercel & Render
 
-Overview
-- Frontend: React app located at project root `src/` and `build/` for production build.
-- Backend: Express server using SQLite at `backend/server.js` (port 5000 by default).
+This guide explains how to deploy the Hygienix Deep Cleaning application using **GitHub**, **Vercel** (Frontend), and **Render** (Backend).
 
-Prerequisites
-- Node.js (16+) and npm installed on the server.
-- A production domain + TLS certificate (recommended: use Let's Encrypt via nginx).
-- Environment variables set (see `.env` example in `backend/.env.example`).
+## 🚀 Step 1: Push to GitHub
 
-Backend environment variables (important)
-- `SMTP_HOST` - SMTP server host (e.g. smtp.gmail.com)
-- `SMTP_PORT` - SMTP port (587 or 465)
-- `SMTP_USER` - SMTP username (email)
-- `SMTP_PASS` - SMTP password or app-specific password
-- `OWNER_EMAIL` - Email address to receive contact/order notifications
-- `JWT_SECRET` - Strong random secret string (do NOT use the default)
+1. **Initialize Git (if not done):**
+   ```bash
+   git init
+   git add .
+   git commit -m "chore: prepare for deployment"
+   ```
+2. **Create a Repo on GitHub:**
+   - Go to [GitHub](https://github.com/new) and create a private repository.
+3. **Push Code:**
+   ```bash
+   git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
+   git branch -M main
+   git push -u origin main
+   ```
 
-Install dependencies (backend)
+---
 
-```powershell
-cd "c:\Users\sukru\Downloads\HYGIENIX DEEP CLEANING\New folder\my-app\backend"
-npm install --production
-```
+## 🛠️ Step 2: Deploy Backend to Render
 
-Start backend (production)
+1. Go to [Render Dashboard](https://dashboard.render.com/).
+2. Click **New +** > **Web Service**.
+3. Connect your GitHub repository.
+4. **Configuration:**
+   - **Name:** `hygienix-backend`
+   - **Root Directory:** `backend`
+   - **Runtime:** `Node`
+   - **Build Command:** `npm install`
+   - **Start Command:** `node server.js`
+5. **Environment Variables:**
+   Click **Advanced** > **Add Environment Variable**:
+   - `PORT`: `5001`
+   - `JWT_SECRET`: (Generate a random string)
+   - `WHATSAPP_PHONE_NUMBER_ID`: `975554148965319`
+   - `WHATSAPP_TOKEN`: (Your Meta Token)
+   - `ADMIN_WHATSAPP_NUMBER`: `919535071595`
+   - `ADMIN_EMAIL`: `admin@hygienix.in`
+   - `ADMIN_PASSWORD`: (Your Admin Password)
+6. Click **Create Web Service**.
+7. **Note the URL:** It will look like `https://hygienix-backend.onrender.com`.
 
-```powershell
-# set env vars in the environment or via a process manager
-$env:JWT_SECRET = 'your-secure-random-string'
-# Ex: use PM2 or a similar process manager
-pm install -g pm2
-pm run start
-# or
-pm run dev (for development with nodemon)
-```
+---
 
-Frontend build & serve
+## 🌐 Step 3: Deploy Frontend to Vercel
 
-```powershell
-cd "c:\Users\sukru\Downloads\HYGIENIX DEEP CLEANING\New folder\my-app"
-npm install
-npm run build
-# Serve the contents of the `build/` directory using nginx, static file server, or Node static server.
-```
+1. Go to [Vercel Dashboard](https://vercel.com/dashboard).
+2. Click **Add New** > **Project**.
+3. Import your GitHub repository.
+4. **Configuration:**
+   - **Project Name:** `hygienix-frontend`
+   - **Framework Preset:** `Create React App`
+   - **Root Directory:** `./` (Default)
+5. **Environment Variables:**
+   - `REACT_APP_API_BASE_URL`: `https://YOUR_BACKEND_URL.onrender.com/api`
+6. Click **Deploy**.
 
-Recommended nginx proxy (sketch)
+---
 
-```
-server {
-    listen 80;
-    server_name example.com www.example.com;
-    return 301 https://$host$request_uri;
-}
+## 🔒 Important Security Notes
 
-server {
-    listen 443 ssl;
-    server_name example.com www.example.com;
-    ssl_certificate /etc/letsencrypt/live/example.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;
+- **Persistent Data**: Render's free tier uses an ephemeral disk. This means your SQLite database (`hygienix.db`) will reset whenever the server restarts. 
+  - *Recommendation*: For a production app, use Render's **PostgreSQL** or a managed MySQL database and update `db.js`.
+- **CORS**: Ensure `backend/server.js` allows requests from your Vercel URL. Currently, it is set to `origin: true` which is flexible for testing but should be restricted to your Vercel domain later.
 
-    location /api/ {
-        proxy_pass http://localhost:5000/api/;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    }
+---
 
-    location / {
-        root /var/www/hygienix/build;
-        try_files $uri $uri/ /index.html;
-    }
-}
-```
+## 🔄 Updates
 
-Security checklist before going live
-- Set a strong `JWT_SECRET` and never commit it to the repo.
-- Use HTTPS for all traffic.
-- Set `OWNER_EMAIL` and SMTP credentials in the environment.
-- Restrict `CORS` origins to your domain in `backend/server.js` (adjust `cors()` options).
-- Add monitoring and periodic backups for the SQLite DB file.
-
-Operational notes
-- The app uses a local SQLite DB located at `backend/hygienix.db`. For production consider migrating to a managed DB (Postgres, MySQL) if you expect high traffic or concurrent writes.
-- Back up the `hygienix.db` file regularly (cron job or scheduled task).
-
-If you want, I can also generate an `nginx` config tailored to your domain and create a `pm2` start script.
+Every time you push to the `main` branch on GitHub, both Vercel and Render will automatically redeploy your changes.

@@ -95,8 +95,16 @@ export default function BookNow() {
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Server rejected booking');
 
-            alert(`Booking confirmed! You will receive a WhatsApp confirmation shortly.`);
-            navigate('/customer-dashboard');
+            // Instead of alert, navigate to Success page with order details
+            navigate('/success', {
+                state: {
+                    order: {
+                        ...data.order,
+                        serviceType: bookingForm.propertyType, // Ensure these are passed
+                        category: bookingForm.bhkCategory
+                    }
+                }
+            });
         } catch (err) {
             setError(err.message);
         } finally {

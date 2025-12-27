@@ -3,7 +3,6 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../db');
 const crypto = require('crypto');
-const nodemailer = require('nodemailer');
 
 const router = express.Router();
 const SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
@@ -71,57 +70,18 @@ router.post('/customer/login', (req, res) => {
     );
 });
 
-// Customer Forgot Password
-router.post('/customer/forgot-password', (req, res) => {
-    const { email } = req.body;
-
-    if (!email) {
-        return res.status(400).json({ error: 'Email required' });
-    }
-
-    db.get('SELECT id, email FROM users WHERE email = ? AND role = ?', [email, 'customer'], (err, row) => {
-        if (err || !row) {
-            return res.json({ message: 'If that email exists, a reset link was sent.' });
-        }
-
-        const token = crypto.randomBytes(32).toString('hex');
-        const expires = Date.now() + 3600000; // 1 hour
-
-        db.run('UPDATE users SET password_reset_token = ?, password_reset_expires = ? WHERE id = ?',
-            [token, expires, row.id],
-            () => {
-                const transporter = nodemailer.createTransport({
-                    service: 'gmail',
-                    auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_PASS }
-                });
-
-                const resetLink = `${FRONTEND_URL}/reset-password?token=${token}`;
-
-                transporter.sendMail({
-                    from: process.env.GMAIL_USER,
-                    to: email,
-                    subject: 'Password Reset - Hygienix Deep Cleaning',
-                    html: `
-                        <h2>Password Reset Request</h2>
-                        <p>Click the link below to reset your password:</p>
-                        <a href="${resetLink}">${resetLink}</a>
-                        <p>This link will expire in 1 hour.</p>
-                    `
-                }, () => {
-                    res.json({ message: 'If that email exists, a reset link was sent.' });
-                });
-            }
-        );
-    });
+// Customer Forgot Password (DEACTIVATED)
+router.post(['/customer/forgot-password', '/forgot'], (req, res) => {
+    res.json({ message: 'Email service is disabled. Please contact admin on WhatsApp to reset your password.' });
 });
 
 // ============================================
 // ADMIN AUTH ENDPOINTS
 // ============================================
 
-// Admin Login (NO signup, NO forgot password)
+// Admin Login
 router.post('/admin/login', (req, res) => {
-    const { identifier, password } = req.body; // identifier can be email or phone
+    const { identifier, password } = req.body;
 
     if (!identifier || !password) {
         return res.status(400).json({ error: 'Email/Phone and password required' });
@@ -144,7 +104,7 @@ router.post('/admin/login', (req, res) => {
 });
 
 // ============================================
-// LEGACY ENDPOINTS (Keep for backward compatibility)
+// LEGACY & UTILITY
 // ============================================
 
 router.post(['/signup', '/register'], async (req, res) => {
@@ -171,34 +131,21 @@ router.post(['/signup', '/register'], async (req, res) => {
     }
 });
 
-
-
-// NEW: Send OTP Endpoint (Mock)
 router.post('/send-otp', (req, res) => {
     const { phone } = req.body;
     if (!phone) return res.status(400).json({ error: 'Phone number required' });
-
-    // In production, send SMS here. For now, just return success.
-    console.log(`OTP sent to ${phone}: 123456`);
+    console.log(`[MOCK] OTP sent to ${phone}: 123456`);
     res.json({ message: 'OTP sent successfully' });
 });
 
-// NEW: Login with OTP Endpoint
 router.post('/login-otp', (req, res) => {
     const { phone, otp } = req.body;
     if (!phone || !otp) return res.status(400).json({ error: 'Phone and OTP required' });
-
     if (otp !== '123456') return res.status(401).json({ error: 'Invalid OTP' });
 
     db.get('SELECT * FROM users WHERE phone = ?', [phone], (err, row) => {
         if (err) return res.status(500).json({ error: 'Database error' });
-
         if (!row) {
-            // OPTIONAL: Auto-register if not exists? User said "NO signup", implying existing users only.
-            // But for testing, if admin doesn't exist, we might fail.
-            // Let's assume existing user. If not found, create one for "Customer" tab ease?
-            // User instruction: "Customer Tab -> Any phone -> CustomerDashboard". This implies auto-signup or mock.
-            // Let's auto-create if missing to ensure "Any phone" works.
             const tempEmail = `${phone}@hygienix.in`;
             db.run('INSERT INTO users (name, email, phone, role) VALUES (?, ?, ?, ?)',
                 ['Guest Customer', tempEmail, phone, 'customer'],
@@ -217,9 +164,8 @@ router.post('/login-otp', (req, res) => {
     });
 });
 
-
 router.post(['/login', '/customer/login'], (req, res) => {
-    const { identifier, password, email } = req.body; // identifier can be email or phone
+    const { identifier, password, email } = req.body;
     const loginId = identifier || email;
 
     if (!loginId || !password) return res.status(400).json({ error: 'Email/Phone and password required' });
@@ -237,9 +183,6 @@ router.post(['/login', '/customer/login'], (req, res) => {
     });
 });
 
-
-
-// TEMPORARY: Set password for a user by phone (Helper for Admin)
 router.get('/set-password/:phone/:password', async (req, res) => {
     const { phone, password } = req.params;
     try {
@@ -254,46 +197,12 @@ router.get('/set-password/:phone/:password', async (req, res) => {
     }
 });
 
-// TEMPORARY: Endpoint to promote a user to admin by phone
 router.get('/promote/:phone', (req, res) => {
     const { phone } = req.params;
     db.run("UPDATE users SET role = 'admin' WHERE phone = ?", [phone], function (err) {
         if (err) return res.status(500).json({ error: err.message });
-        if (this.changes === 0) return res.status(404).json({ error: 'User not found with that phone number' });
-        res.json({ message: `Success! User with phone ${phone} is now an ADMIN. Please login again.` });
-    });
-});
-
-router.post('/forgot', (req, res) => {
-    const { email } = req.body;
-    db.get('SELECT id, email FROM users WHERE email = ?', [email], (err, row) => {
-        if (err || !row) return res.json({ message: 'If that email exists, a reset link was sent.' });
-        const token = crypto.randomBytes(32).toString('hex');
-        const expires = Date.now() + 3600000;
-        db.run('UPDATE users SET password_reset_token = ?, password_reset_expires = ? WHERE id = ?', [token, expires, row.id], () => {
-            const transporter = nodemailer.createTransport({
-                service: 'gmail',
-                auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_PASS }
-            });
-            const resetLink = `${FRONTEND_URL}/reset-password?token=${token}`;
-            transporter.sendMail({
-                from: process.env.GMAIL_USER,
-                to: email,
-                subject: 'Password Reset - Hygienix',
-                text: `Link: ${resetLink}`
-            }, () => res.json({ message: 'If that email exists, a reset link was sent.' }));
-        });
-    });
-});
-
-router.post('/reset', async (req, res) => {
-    const { token, newPassword } = req.body;
-    db.get('SELECT id FROM users WHERE password_reset_token = ? AND password_reset_expires > ?', [token, Date.now()], async (err, row) => {
-        if (!row) return res.status(400).json({ error: 'Invalid or expired token' });
-        const hash = await bcrypt.hash(newPassword, 10);
-        db.run('UPDATE users SET password_hash = ?, password_reset_token = NULL, password_reset_expires = NULL WHERE id = ?', [hash, row.id], () => {
-            res.json({ message: 'Password reset successful' });
-        });
+        if (this.changes === 0) return res.status(404).json({ error: 'User not found' });
+        res.json({ message: `User with phone ${phone} promoted to admin.` });
     });
 });
 
