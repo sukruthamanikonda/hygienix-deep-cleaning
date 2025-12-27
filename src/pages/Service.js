@@ -16,6 +16,8 @@ export default function Services() {
     name: user?.name || '',
     phone: user?.phone || '',
     date: '',
+    time: '10:00 AM', // Default
+    city: 'Bengaluru', // Default
     address: '',
     propertyType: 'home',
     bhkCategory: '1 BHK Furnished',
@@ -88,7 +90,9 @@ export default function Services() {
         customer_name: bookingForm.name,
         customer_phone: bookingForm.phone,
         address: bookingForm.address,
-        service_date: bookingForm.date
+        service_date: bookingForm.date,
+        service_time: bookingForm.time,
+        city: bookingForm.city
       };
 
       const headers = { 'Content-Type': 'application/json' };
@@ -103,7 +107,21 @@ export default function Services() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Booking failed');
 
-      alert(`Booking confirmed! You will receive a WhatsApp confirmation shortly.`);
+      /* ---------------- WHATSAPP REDIRECT ---------------- */
+      const adminNumber = '917975967466';
+      const message = `New Hygienix order 🚀
+Name: ${bookingForm.name}
+Phone: ${bookingForm.phone}
+Service: ${selectedService.title}
+Category: ${bookingForm.bhkCategory}
+Date: ${bookingForm.date}
+Time: ${bookingForm.time}
+City: ${bookingForm.city}
+Address: ${bookingForm.address}
+Order ID: #${data.order.id}`.trim();
+
+      const waUrl = `https://wa.me/${adminNumber}?text=${encodeURIComponent(message)}`;
+      window.open(waUrl, '_blank');
 
       if (token) {
         navigate('/my-orders');
@@ -278,15 +296,41 @@ export default function Services() {
                   </div>
                 </div>
 
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Preferred Date</label>
+                    <input
+                      required
+                      type="date"
+                      min={new Date().toISOString().split('T')[0]}
+                      className="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-emerald-500 outline-none transition-all font-bold text-slate-700"
+                      value={bookingForm.date}
+                      onChange={e => setBookingForm({ ...bookingForm, date: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Preferred Time</label>
+                    <select
+                      className="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-emerald-500 outline-none transition-all font-bold text-slate-700"
+                      value={bookingForm.time}
+                      onChange={e => setBookingForm({ ...bookingForm, time: e.target.value })}
+                    >
+                      {['09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM'].map(t => (
+                        <option key={t} value={t}>{t}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Preferred Date</label>
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">City</label>
                   <input
                     required
-                    type="date"
-                    min={new Date().toISOString().split('T')[0]}
+                    type="text"
                     className="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-emerald-500 outline-none transition-all font-bold text-slate-700"
-                    value={bookingForm.date}
-                    onChange={e => setBookingForm({ ...bookingForm, date: e.target.value })}
+                    value={bookingForm.city}
+                    onChange={e => setBookingForm({ ...bookingForm, city: e.target.value })}
+                    placeholder="e.g., Bengaluru"
                   />
                 </div>
 

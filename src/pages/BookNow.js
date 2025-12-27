@@ -14,6 +14,8 @@ export default function BookNow() {
         name: '',
         phone: '',
         date: '',
+        time: '10:00 AM', // Default time
+        city: 'Bengaluru', // Default city
         address: '',
         propertyType: 'home',
         bhkCategory: '1 BHK Furnished',
@@ -79,7 +81,9 @@ export default function BookNow() {
             customer_name: bookingForm.name,
             customer_phone: bookingForm.phone,
             address: bookingForm.address,
-            service_date: bookingForm.date
+            service_date: bookingForm.date,
+            service_time: bookingForm.time,
+            city: bookingForm.city
         };
 
         try {
@@ -95,12 +99,28 @@ export default function BookNow() {
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Server rejected booking');
 
-            // Instead of alert, navigate to Success page with order details
+            /* ---------------- WHATSAPP REDIRECT ---------------- */
+            const adminNumber = '917975967466';
+            const message = `New Hygienix order 🚀
+Name: ${bookingForm.name}
+Phone: ${bookingForm.phone}
+Service: ${bookingForm.propertyType}
+Category: ${bookingForm.bhkCategory}
+Date: ${bookingForm.date}
+Time: ${bookingForm.time}
+City: ${bookingForm.city}
+Address: ${bookingForm.address}
+Order ID: #${data.order.id}`.trim();
+
+            const waUrl = `https://wa.me/${adminNumber}?text=${encodeURIComponent(message)}`;
+            window.open(waUrl, '_blank');
+
+            // Navigate to Success page with order details
             navigate('/success', {
                 state: {
                     order: {
                         ...data.order,
-                        serviceType: bookingForm.propertyType, // Ensure these are passed
+                        serviceType: bookingForm.propertyType,
                         category: bookingForm.bhkCategory
                     }
                 }
@@ -192,15 +212,39 @@ export default function BookNow() {
                             />
                         </div>
 
-                        <div className="relative group">
-                            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 w-5 h-5 transition-colors" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="relative group">
+                                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 w-5 h-5 transition-colors" />
+                                <input
+                                    required
+                                    type="date"
+                                    min={new Date().toISOString().split('T')[0]}
+                                    className="w-full pl-12 pr-4 py-3 bg-slate-50 border-2 border-transparent rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all font-bold text-slate-700"
+                                    value={bookingForm.date}
+                                    onChange={e => setBookingForm({ ...bookingForm, date: e.target.value })}
+                                />
+                            </div>
+                            <div className="relative group">
+                                <select
+                                    className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all font-bold text-slate-700"
+                                    value={bookingForm.time}
+                                    onChange={e => setBookingForm({ ...bookingForm, time: e.target.value })}
+                                >
+                                    {['09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM'].map(t => (
+                                        <option key={t} value={t}>{t}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
                             <input
                                 required
-                                type="date"
-                                min={new Date().toISOString().split('T')[0]}
-                                className="w-full pl-12 pr-4 py-3 bg-slate-50 border-2 border-transparent rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all font-bold text-slate-700"
-                                value={bookingForm.date}
-                                onChange={e => setBookingForm({ ...bookingForm, date: e.target.value })}
+                                type="text"
+                                className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all font-bold text-slate-700"
+                                value={bookingForm.city}
+                                onChange={e => setBookingForm({ ...bookingForm, city: e.target.value })}
+                                placeholder="City (e.g., Bengaluru)"
                             />
                         </div>
 
@@ -212,7 +256,7 @@ export default function BookNow() {
                                 className="w-full pl-12 pr-4 py-3 bg-slate-50 border-2 border-transparent rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all font-bold text-slate-700"
                                 value={bookingForm.address}
                                 onChange={e => setBookingForm({ ...bookingForm, address: e.target.value })}
-                                placeholder="Service Address (Bengaluru Only)"
+                                placeholder="Service Address"
                             ></textarea>
                         </div>
                     </div>
