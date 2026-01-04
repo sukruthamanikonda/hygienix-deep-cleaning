@@ -18,6 +18,10 @@ import AdminDashboard from './pages/AdminDashboard';
 import Success from './pages/Success';
 
 export default function App() {
+  React.useEffect(() => {
+    document.title = 'HYGIENIX Deep Cleaning Bengaluru | Home Cleaning';
+  }, []);
+
   return (
     <AuthProvider>
       <Router>

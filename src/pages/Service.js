@@ -5,40 +5,10 @@ import { SERVICES_DATA, EXCLUDED_ITEMS } from '../constants';
 import { API_BASE } from '../api';
 import { Lock, Sparkles, X, CheckCircle, ChevronRight, Loader2 } from 'lucide-react';
 
-import { Helmet } from 'react-helmet-async';
-
 export default function Services() {
   const { user, bLogin, token } = useAuth();
   const navigate = useNavigate();
 
-  const serviceSchema = {
-    "@context": "https://schema.org",
-    "@type": "Service",
-    "serviceType": "Deep Cleaning Services",
-    "provider": {
-      "@type": "LocalBusiness",
-      "name": "HYGIENIX",
-      "address": {
-        "@type": "PostalAddress",
-        "addressLocality": "Bengaluru",
-        "addressRegion": "KA",
-        "addressCountry": "IN"
-      }
-    },
-    "areaServed": "Bengaluru",
-    "hasOfferCatalog": {
-      "@type": "OfferCatalog",
-      "name": "Cleaning Services",
-      "itemListElement": SERVICES_DATA.map(s => ({
-        "@type": "Offer",
-        "itemOffered": {
-          "@type": "Service",
-          "name": s.title,
-          "description": s.features.join(", ")
-        }
-      }))
-    }
-  };
   const [activeCategory, setActiveCategory] = useState('All');
   const [selectedService, setSelectedService] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -169,16 +139,6 @@ Order ID: #${data.order.id}`.trim();
 
   return (
     <div className="min-h-screen bg-gray-50 pt-10 pb-20 animate-fade-in">
-      <Helmet>
-        <title>Professional Cleaning Services Bengaluru | Home, Office & Villa Deep Clean</title>
-        <meta name="description" content="Explore our wide range of professional deep cleaning services in Bengaluru. From 1 BHK apartments to luxury villas and commercial offices. Book your slot on WhatsApp." />
-        <meta name="keywords" content="apartment cleaning Bengaluru, villa deep cleaning, office cleaning services, sofa shampooing Bengaluru, kitchen deep cleaning" />
-        <link rel="canonical" href="https://hygienixdeepcleaning.in/services" />
-
-        <script type="application/ld+json">
-          {JSON.stringify(serviceSchema)}
-        </script>
-      </Helmet>
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-slate-900 mb-4 flex items-center justify-center gap-3">
