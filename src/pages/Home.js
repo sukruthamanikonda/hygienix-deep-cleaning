@@ -118,7 +118,7 @@ const HomeView = () => {
         <div className="absolute inset-0 opacity-60">
           <img
             src="https://img.freepik.com/premium-photo/professional-cleaning-concept-banner-with-soft-focus-blurred-background_1164591-5943.jpg"
-            alt="Professional Cleaning"
+            alt="Deep Cleaning Services Bengaluru"
             className="w-full h-full object-cover"
             fetchPriority="high"
           />
@@ -133,24 +133,24 @@ const HomeView = () => {
             className="max-w-2xl"
           >
             <span className="bg-emerald-500/20 text-emerald-300 px-4 py-1.5 rounded-full text-sm font-semibold border border-emerald-500/30 mb-6 inline-block backdrop-blur-sm">
-              #1 Deep Cleaning Service in Bengaluru
+              #1 Deep Cleaning Service in Basaveshwara Nagar
             </span>
             <h1 className="text-5xl md:text-7xl font-heading font-bold text-white leading-[1.1] mb-6 drop-shadow-lg">
-              Deep Cleaning Services in <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-300">Bengaluru</span>
+              Deep Cleaning <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-300">Services Bengaluru</span>
             </h1>
             <p className="text-slate-200 text-lg md:text-xl mb-8 leading-relaxed font-medium">
               Professional deep cleaning for homes, offices, and villas.
-              We don't just clean; we hygiene-check your space using advanced machinery.
+              We provide the best cleaning services in Basaveshwara Nagar, Bengaluru.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
-                onClick={() => navigate('/services')}
-                className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-6 md:py-4 md:px-8 rounded-full shadow-lg hover:shadow-emerald-500/40 transform hover:-translate-y-1 transition-all duration-300 text-base md:text-lg animate-pulse"
+                onClick={() => window.open(whatsappUrl, '_blank')}
+                className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-6 md:py-4 md:px-8 rounded-full shadow-lg hover:shadow-emerald-500/40 transform hover:-translate-y-1 transition-all duration-300 text-base md:text-lg animate-pulse flex items-center gap-2"
               >
-                Explore Services
+                Book Now WhatsApp
               </Button>
-              <Button variant="outline" className="!border-white !text-white hover:!bg-white/10" onClick={() => navigate('/contact')}>
-                Contact Us
+              <Button variant="outline" className="!border-white !text-white hover:!bg-white/10" onClick={() => navigate('/services')}>
+                Explore Services
               </Button>
             </div>
           </motion.div>
