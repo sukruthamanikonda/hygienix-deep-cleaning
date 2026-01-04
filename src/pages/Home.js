@@ -64,14 +64,14 @@ const HomeView = () => {
             className="max-w-2xl"
           >
             <span className="bg-emerald-500/20 text-emerald-300 px-4 py-1.5 rounded-full text-sm font-semibold border border-emerald-500/30 mb-6 inline-block backdrop-blur-sm">
-              #1 Deep Cleaning Service in Basaveshwara Nagar
+              #1 Deep Cleaning Service in Kamalanagar
             </span>
             <h1 className="text-5xl md:text-7xl font-heading font-bold text-white leading-[1.1] mb-6 drop-shadow-lg">
               Deep Cleaning <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-300">Services Bengaluru</span>
             </h1>
             <p className="text-slate-200 text-lg md:text-xl mb-8 leading-relaxed font-medium">
               Professional deep cleaning for homes, offices, and villas.
-              We provide the best cleaning services in Basaveshwara Nagar, Bengaluru.
+              We provide the best cleaning services in Kamalanagar, Bengaluru.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
