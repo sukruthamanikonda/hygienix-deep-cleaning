@@ -8,14 +8,82 @@ import {
 import { Button, SectionTitle, BeforeAfterCard } from '../component/Shared';
 import { SERVICES_DATA, CONTACT_PHONE, COMPARISON_DATA } from '../constants';
 
+import { Helmet } from 'react-helmet-async';
+
 const HomeView = () => {
   const navigate = useNavigate();
   // Clean phone number for WhatsApp link
   const whatsappNumber = CONTACT_PHONE.replace(/[^0-9]/g, '');
   const whatsappUrl = `https://wa.me/${whatsappNumber}`;
 
+  const schemaData = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "HYGIENIX Deep Cleaning Services",
+    "image": "https://hygienixdeepcleaning.in/og-hero.jpg",
+    "@id": "https://hygienixdeepcleaning.in",
+    "url": "https://hygienixdeepcleaning.in",
+    "telephone": "+91-9535901059",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Basaveshwara Nagar",
+      "addressLocality": "Bengaluru",
+      "addressRegion": "KA",
+      "postalCode": "560079",
+      "addressCountry": "IN"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 12.9833,
+      "longitude": 77.55
+    },
+    "openingHoursSpecification": {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday"
+      ],
+      "opens": "08:00",
+      "closes": "20:00"
+    },
+    "sameAs": [
+      "https://www.facebook.com/hygienix",
+      "https://www.instagram.com/hygienix"
+    ]
+  };
+
   return (
     <div className="w-full relative">
+      <Helmet>
+        <title>HYGIENIX Deep Cleaning Services Bengaluru | Home Office Sofa Cleaning</title>
+        <meta name="description" content="Professional deep cleaning services in Basaveshwara Nagar, Bengaluru. Home, office, sofa, carpet & kitchen cleaning. WhatsApp booking. #1 Rated Cleaning Service." />
+        <meta name="keywords" content="deep cleaning Bengaluru, home cleaning Basaveshwara Nagar, sofa cleaning Vijayanagar, office cleaning Bengaluru, kitchen cleaning Bengaluru, bathroom sanitization Bengaluru" />
+        <link rel="canonical" href="https://hygienixdeepcleaning.in" />
+
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://hygienixdeepcleaning.in/" />
+        <meta property="og:title" content="HYGIENIX Deep Cleaning Services Bengaluru | Home Office Sofa Cleaning" />
+        <meta property="og:description" content="Professional deep cleaning services in Basaveshwara Nagar, Bengaluru. Home, office, sofa, carpet & kitchen cleaning. WhatsApp booking." />
+        <meta property="og:image" content="https://hygienixdeepcleaning.in/og-hero.jpg" />
+
+        {/* Twitter */}
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content="https://hygienixdeepcleaning.in/" />
+        <meta property="twitter:title" content="HYGIENIX Deep Cleaning Services Bengaluru | Home Office Sofa Cleaning" />
+        <meta property="twitter:description" content="Professional deep cleaning services in Basaveshwara Nagar, Bengaluru. Home, office, sofa, carpet & kitchen cleaning. WhatsApp booking." />
+        <meta property="twitter:image" content="https://hygienixdeepcleaning.in/og-hero.jpg" />
+
+        {/* JSON-LD Schema */}
+        <script type="application/ld+json">
+          {JSON.stringify(schemaData)}
+        </script>
+      </Helmet>
       {/* Call Floating Button */}
       <a
         href={`tel:${CONTACT_PHONE}`}
@@ -68,7 +136,7 @@ const HomeView = () => {
               #1 Deep Cleaning Service in Bengaluru
             </span>
             <h1 className="text-5xl md:text-7xl font-heading font-bold text-white leading-[1.1] mb-6 drop-shadow-lg">
-              Experience the <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-300">Purest Clean</span>
+              Deep Cleaning Services in <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-300">Bengaluru</span>
             </h1>
             <p className="text-slate-200 text-lg md:text-xl mb-8 leading-relaxed font-medium">
               Professional deep cleaning for homes, offices, and villas.
@@ -109,7 +177,7 @@ const HomeView = () => {
       {/* Info Graphic Section - Process */}
       <section className="py-20 bg-slate-50">
         <div className="container mx-auto px-6">
-          <SectionTitle subtitle="How We Work" title="Simple 4-Step Process" />
+          <SectionTitle subtitle="How We Work" title="Professional Deep Cleaning Process" />
 
           <div className="grid md:grid-cols-4 gap-6">
             {[
