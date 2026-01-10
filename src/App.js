@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './component/Navbar';
-import Footbar from './component/Footbar';
+import Footer from './components/Footer';
 import Home from './pages/Home';
 import Services from './pages/Service';
 import About from './pages/About';
@@ -19,7 +19,7 @@ import Success from './pages/Success';
 
 export default function App() {
   React.useEffect(() => {
-    document.title = 'HYGIENIX Deep Cleaning Bengaluru | Home Cleaning';
+    document.title = 'Deep Cleaning Kamalanagar Bengaluru | HYGIENIX';
   }, []);
 
   return (
@@ -72,7 +72,7 @@ export default function App() {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>
-          <Footbar />
+          <Footer />
         </div>
       </Router>
     </AuthProvider>
